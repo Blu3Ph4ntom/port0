@@ -2,7 +2,6 @@ package process
 
 import (
 	"fmt"
-	"io"
 	"log/slog"
 	"net"
 	"os"
@@ -84,8 +83,9 @@ func (m *Manager) Spawn(proj *state.Project) error {
 		MaxBackups: 3,
 	}
 
-	cmd.Stdout = io.MultiWriter(os.Stdout, logger)
-	cmd.Stderr = io.MultiWriter(os.Stderr, logger)
+	// Only output to logger for daemon processes, not to stdout/stderr
+	cmd.Stdout = logger
+	cmd.Stderr = logger
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("process: start %s: %w", proj.Name, err)
