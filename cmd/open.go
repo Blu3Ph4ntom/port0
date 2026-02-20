@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/bluephantom/port0/internal/ipc"
+	"github.com/blu3ph4ntom/port0/internal/ipc"
 	"github.com/spf13/cobra"
 )
 

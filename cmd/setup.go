@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/bluephantom/port0/internal/setup"
+	"github.com/blu3ph4ntom/port0/internal/setup"
 	"github.com/spf13/cobra"
 )
 

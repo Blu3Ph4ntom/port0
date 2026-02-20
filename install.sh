@@ -33,9 +33,9 @@ main() {
     echo "Installing port0 for $OS/$ARCH..."
 
     if [ "$VERSION" = "latest" ]; then
-        DOWNLOAD_URL="https://github.com/bluephantom/port0/releases/latest/download/port0-${OS}-${ARCH}"
+        DOWNLOAD_URL="https://github.com/blu3ph4ntom/port0/releases/latest/download/port0-${OS}-${ARCH}"
     else
-        DOWNLOAD_URL="https://github.com/bluephantom/port0/releases/download/${VERSION}/port0-${OS}-${ARCH}"
+        DOWNLOAD_URL="https://github.com/blu3ph4ntom/port0/releases/download/${VERSION}/port0-${OS}-${ARCH}"
     fi
 
     if [ "$OS" = "windows" ]; then

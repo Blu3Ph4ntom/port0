@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/bluephantom/port0/cmd"
+	"github.com/blu3ph4ntom/port0/cmd"
 )
 
 var Version = "dev"

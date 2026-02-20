@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bluephantom/port0/internal/state"
+	"github.com/blu3ph4ntom/port0/internal/state"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 

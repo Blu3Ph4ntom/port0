@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bluephantom/port0/internal/daemon"
+	"github.com/blu3ph4ntom/port0/internal/daemon"
 )
 
 func runDaemon() {

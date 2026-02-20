@@ -4,17 +4,17 @@
 
 ### macOS / Linux
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bluephantom/port0/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.sh | bash
 ```
 
 ### Windows
 ```powershell
-irm https://raw.githubusercontent.com/bluephantom/port0/main/install.bat | iex
+irm https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.bat | iex
 ```
 
 ## Manual Install
 
-Download binary from [releases](https://github.com/bluephantom/port0/releases) and add to PATH.
+Download binary from [releases](https://github.com/blu3ph4ntom/port0/releases) and add to PATH.
 
 ## Setup
 
@@ -26,10 +26,16 @@ sudo port0 setup
 ## Usage
 
 ```bash
-port0 run npm run dev
-port0 run vite
-port0 run python -m http.server
-port0 run go run main.go
+port0 npm run dev
+port0 vite
+port0 python -m http.server
+port0 go run main.go
+
+# Custom name
+port0 -n myapi npm start
+
+# Background mode
+port0 -d npm run dev
 ```
 
 Access at: `http://projectname.localhost`
@@ -37,7 +43,7 @@ Access at: `http://projectname.localhost`
 ## Commands
 
 ```bash
-port0 run <cmd>      # Start server
+port0 <cmd>          # Start server (default)
 port0 ls             # List projects
 port0 logs <name>    # View logs
 port0 kill <name>    # Stop project
