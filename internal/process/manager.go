@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -57,7 +58,20 @@ func (m *Manager) Spawn(proj *state.Project) error {
 		return fmt.Errorf("process: no command specified for %s", proj.Name)
 	}
 
-	cmd := exec.Command(proj.Cmd[0], proj.Cmd[1:]...)
+	// Resolve relative paths on Windows
+	cmdArgs := make([]string, len(proj.Cmd))
+	copy(cmdArgs, proj.Cmd)
+	for i, arg := range cmdArgs {
+		// If arg looks like a relative path (.\file or ..\file on Windows)
+		if len(arg) > 2 && (arg[0] == '.' && (arg[1] == '\\' || arg[1] == '/')) {
+			// Make it absolute
+			if abs, err := filepath.Abs(filepath.Join(proj.Cwd, arg)); err == nil {
+				cmdArgs[i] = abs
+			}
+		}
+	}
+
+	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	cmd.Dir = proj.Cwd
 
 	env := os.Environ()
