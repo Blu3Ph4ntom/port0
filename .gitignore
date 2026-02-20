@@ -1,6 +1,7 @@
 # Build output
 port0
 port0.exe
+port0.exe~
 dist/
 
 # IDE
@@ -16,5 +17,7 @@ Thumbs.db
 # Go
 vendor/
 
-# Agent planning
-.claude/
+# Test files
+node_modules/
+server.js
+test_server.go
