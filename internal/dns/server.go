@@ -92,7 +92,7 @@ func (s *Server) handleDNS(w mdns.ResponseWriter, r *mdns.Msg) {
 
 	for _, q := range r.Question {
 		name := strings.ToLower(q.Name)
-		if !strings.HasSuffix(name, ".web.") {
+		if !strings.HasSuffix(name, ".web.") && !strings.HasSuffix(name, ".local.") {
 			msg.Rcode = mdns.RcodeServerFailure
 			w.WriteMsg(msg)
 			return
