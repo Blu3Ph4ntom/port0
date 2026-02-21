@@ -1,0 +1,44 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Title }}</title>
+<meta name="description" content="{{ .Site.Params.description }}">
+<meta name="keywords" content="{{ delimit .Site.Params.keywords ", " }}">
+<link rel="canonical" href="{{ .Site.BaseURL }}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<meta property="og:title" content="port0">
+<meta property="og:description" content="{{ .Site.Params.description }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ .Site.BaseURL }}">
+<meta property="og:image" content="{{ .Site.BaseURL }}og.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="{{ .Site.Params.twitter }}">
+<meta name="twitter:title" content="port0">
+<meta name="twitter:description" content="{{ .Site.Params.description }}">
+<meta name="twitter:image" content="{{ .Site.BaseURL }}og.png">
+
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+
+<link rel="stylesheet" href="{{ (resources.Get "css/site.css").RelPermalink }}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "port0",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS, Linux, Windows",
+  "description": "{{ .Site.Params.description }}",
+  "url": "{{ .Site.BaseURL }}",
+  "author": {
+    "@type": "Person",
+    "name": "BluePhantom",
+    "sameAs": ["https://twitter.com/Im_BluePhantom", "https://github.com/blu3ph4ntom"]
+  }
+}
+</script>

@@ -1,0 +1,18 @@
+baseURL = "https://port0.bluephantom.dev/"
+title = "port0"
+languageCode = "en-us"
+disableKinds = ["RSS", "taxonomy", "term"]
+enableRobotsTXT = true
+
+[params]
+  description = "port0 assigns free ports, injects PORT, and serves your local apps on clean hostnames."
+  keywords = ["port0", "local development", "port", "reverse proxy", "dns", "localhost"]
+  twitter = "@Im_BluePhantom"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[outputs]
+  home = ["HTML", "SITEMAP"]
