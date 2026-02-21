@@ -18,6 +18,7 @@ type Project struct {
 	StartedAt time.Time `json:"started_at"`
 	LogFile   string    `json:"log_file"`
 	Restart   string    `json:"restart"`
+	Domain    string    `json:"domain,omitempty"` // parent domain for subdomain routing (e.g., "myapp" for api.myapp.localhost)
 }
 
 type State struct {

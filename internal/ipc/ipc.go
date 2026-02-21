@@ -27,6 +27,7 @@ type SpawnRequest struct {
 	Restart   string   `json:"restart"`
 	TLS       bool     `json:"tls"`
 	PortRange string   `json:"port_range"`
+	Domain    string   `json:"domain,omitempty"` // parent domain for subdomain routing
 }
 
 type KillRequest struct {
@@ -54,6 +55,7 @@ type RegisterRequest struct {
 	Cmd       []string `json:"cmd"`
 	Cwd       string   `json:"cwd"`
 	PortRange string   `json:"port_range"`
+	Domain    string   `json:"domain,omitempty"` // parent domain for subdomain routing
 }
 
 type LogLine struct {

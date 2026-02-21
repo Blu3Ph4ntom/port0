@@ -66,37 +66,108 @@ func TestProxyNotFound(t *testing.T) {
 	}
 }
 
-func TestExtractName(t *testing.T) {
+func TestProxySubdomainRouting(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello from api"))
+	}))
+	defer backend.Close()
+
+	_, portStr, _ := net.SplitHostPort(backend.Listener.Addr().String())
+	port := 0
+	fmt.Sscanf(portStr, "%d", &port)
+
+	p := New()
+	p.UpdateState(&state.State{
+		Projects: map[string]*state.Project{
+			"api": {Name: "api", Port: port, Domain: "myapp"},
+			"web": {Name: "web", Port: 9999, Domain: "myapp"},
+		},
+	})
+
+	// Request to api.myapp.localhost should route to "api" project
+	req := httptest.NewRequest("GET", "http://api.myapp.localhost/", nil)
+	req.Host = "api.myapp.localhost"
+	w := httptest.NewRecorder()
+
+	p.ServeHTTP(w, req)
+
+	resp := w.Result()
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+	if string(body) != "hello from api" {
+		t.Errorf("body = %q, want %q", string(body), "hello from api")
+	}
+}
+
+func TestProxySubdomainFallbackToNoDomain(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("hello from myapp"))
+	}))
+	defer backend.Close()
+
+	_, portStr, _ := net.SplitHostPort(backend.Listener.Addr().String())
+	port := 0
+	fmt.Sscanf(portStr, "%d", &port)
+
+	p := New()
+	p.UpdateState(&state.State{
+		Projects: map[string]*state.Project{
+			"myapp": {Name: "myapp", Port: port, Domain: ""},
+			"api":   {Name: "api", Port: 9999, Domain: "other"},
+		},
+	})
+
+	// Request to myapp.localhost should route to "myapp" project (no domain)
+	req := httptest.NewRequest("GET", "http://myapp.localhost/", nil)
+	req.Host = "myapp.localhost"
+	w := httptest.NewRecorder()
+
+	p.ServeHTTP(w, req)
+
+	resp := w.Result()
+	body, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode != 200 {
+		t.Errorf("status = %d, want 200", resp.StatusCode)
+	}
+	if string(body) != "hello from myapp" {
+		t.Errorf("body = %q, want %q", string(body), "hello from myapp")
+	}
+}
+
+func TestExtractNameAndDomain(t *testing.T) {
 	tests := []struct {
-		host string
-		want string
+		host       string
+		wantName   string
+		wantDomain string
 	}{
 		// Basic domains (no subdomain)
-		{"myapp.localhost", "myapp"},
-		{"myapp.localhost:80", "myapp"},
-		{"myapp.web", "myapp"},
-		{"myapp.web:8080", "myapp"},
-		{"myapp.local", "myapp"},
-		{"plain", "plain"},
-		// Subdomains - each routes to its own project (monorepo support)
-		// api.myapp.localhost -> "api" project
-		// web.myapp.localhost -> "web" project
-		{"api.myapp.localhost", "api"},
-		{"admin.myapp.localhost:80", "admin"},
-		{"api.myapp.web", "api"},
-		{"dashboard.myapp.web:8080", "dashboard"},
-		{"api.myapp.local", "api"},
-		// Multiple subdomains - first segment is the project
-		{"v1.api.myapp.localhost", "v1"},
-		{"app.web.myapp.web", "app"},
+		{"myapp.localhost", "myapp", ""},
+		{"myapp.localhost:80", "myapp", ""},
+		{"myapp.web", "myapp", ""},
+		{"myapp.web:8080", "myapp", ""},
+		{"myapp.local", "myapp", ""},
+		{"plain", "plain", ""},
+		// Subdomains with domain - extracts name and domain separately
+		{"api.myapp.localhost", "api", "myapp"},
+		{"admin.myapp.localhost:80", "admin", "myapp"},
+		{"api.myapp.web", "api", "myapp"},
+		{"dashboard.myapp.web:8080", "dashboard", "myapp"},
+		{"api.myapp.local", "api", "myapp"},
+		// Multiple subdomains - first is name, rest is domain
+		{"v1.api.myapp.localhost", "v1", "api.myapp"},
+		{"app.web.myapp.web", "app", "web.myapp"},
 		// Case insensitive
-		{"API.MyApp.Localhost", "api"},
-		{"MYAPP.LOCALHOST", "myapp"},
+		{"API.MyApp.Localhost", "api", "myapp"},
+		{"MYAPP.LOCALHOST", "myapp", ""},
 	}
 	for _, tt := range tests {
-		got := extractName(tt.host)
-		if got != tt.want {
-			t.Errorf("extractName(%q) = %q, want %q", tt.host, got, tt.want)
+		gotName, gotDomain := extractNameAndDomain(tt.host)
+		if gotName != tt.wantName || gotDomain != tt.wantDomain {
+			t.Errorf("extractNameAndDomain(%q) = (%q, %q), want (%q, %q)", tt.host, gotName, gotDomain, tt.wantName, tt.wantDomain)
 		}
 	}
 }

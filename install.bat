@@ -28,13 +28,13 @@ echo IMPORTANT: Run setup to configure DNS and permissions:
 echo   port0 setup
 echo.
 echo Quick start:
-echo   port0 run npm run dev
-echo   port0 run python -m http.server
+echo   port0 npm run dev
+echo   port0 python -m http.server
 echo   port0 ls
 echo.
 echo Subdomain support (for monorepos):
-echo   api.myapp.localhost ^-> routes to "api" project
-echo   web.myapp.localhost ^-> routes to "web" project
-echo   Run multiple projects under one parent domain.
+echo   port0 -n api.myapp npm run dev     (creates api.myapp.localhost)
+echo   port0 -n web.myapp npm run dev     (creates web.myapp.localhost)
+echo   Or: port0 -n api --domain myapp npm run dev
 
 endlocal
