@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/blu3ph4ntom/port0/internal/ipc"
@@ -16,6 +17,7 @@ import (
 
 var (
 	runName      string
+	runDomain    string
 	runRestart   string
 	runTLS       bool
 	runPortRange string
@@ -37,19 +39,23 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	cwd, _ := os.Getwd()
 
+	// Parse name.domain format (e.g., "api.myapp" -> name="api", domain="myapp")
+	name, domain := parseNameAndDomain(runName, runDomain)
+
 	// If not detached, run in foreground mode
 	if !runDetach {
-		return runForeground(args, cwd)
+		return runForeground(args, cwd, name, domain)
 	}
 
 	// Detached mode: spawn via daemon
 	req := ipc.SpawnRequest{
-		Name:      runName,
+		Name:      name,
 		Cmd:       args,
 		Cwd:       cwd,
 		Restart:   runRestart,
 		TLS:       runTLS,
 		PortRange: runPortRange,
+		Domain:    domain,
 	}
 
 	conn, err := ipc.Connect()
@@ -80,27 +86,32 @@ func runServer(cmd *cobra.Command, args []string) error {
 
 	var data map[string]interface{}
 	json.Unmarshal(resp.Data, &data)
-	name := data["name"].(string)
+	respName := data["name"].(string)
 	port := int(data["port"].(float64))
 	url := data["url"].(string)
 
+	// Build base host for additional URLs
+	baseHost := respName
+	if respDomain, ok := data["domain"].(string); ok && respDomain != "" {
+		baseHost = respName + "." + respDomain
+	}
+
 	cyan := color.New(color.FgCyan).SprintFunc()
 	dim := color.New(color.FgHiBlack).SprintFunc()
-	fmt.Printf("port0: %s → %s (port %d)\n", name, cyan(url), port)
-	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", name)), cyan(fmt.Sprintf("http://%s.local", name)))
-	fmt.Printf("port0: use %s to view logs\n", cyan(fmt.Sprintf("port0 logs %s", name)))
+	fmt.Printf("port0: %s → %s (port %d)\n", respName, cyan(url), port)
+	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", baseHost)), cyan(fmt.Sprintf("http://%s.local", baseHost)))
+	fmt.Printf("port0: use %s to view logs\n", cyan(fmt.Sprintf("port0 logs %s", respName)))
 
 	return nil
 }
 
-func runForeground(args []string, cwd string) error {
+func runForeground(args []string, cwd string, name, domain string) error {
 	// Get a port allocation from daemon
 	conn, err := ipc.Connect()
 	if err != nil {
 		return fmt.Errorf("error: cannot connect to daemon: %w", err)
 	}
 
-	name := runName
 	if name == "" {
 		name = util.FromCwd(cwd)
 	}
@@ -110,6 +121,7 @@ func runForeground(args []string, cwd string) error {
 		Cmd:       args,
 		Cwd:       cwd,
 		PortRange: runPortRange,
+		Domain:    domain,
 	}
 
 	if err := ipc.SendRequest(conn, "register", req); err != nil {
@@ -132,11 +144,17 @@ func runForeground(args []string, cwd string) error {
 	port := int(data["port"].(float64))
 	url := data["url"].(string)
 
+	// Build base host for additional URLs
+	baseHost := name
+	if domain != "" {
+		baseHost = name + "." + domain
+	}
+
 	// Print minimal info
 	cyan := color.New(color.FgCyan).SprintFunc()
 	dim := color.New(color.FgHiBlack).SprintFunc()
 	fmt.Printf("port0: %s → %s (port %d)\n", name, cyan(url), port)
-	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", name)), cyan(fmt.Sprintf("http://%s.local", name)))
+	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", baseHost)), cyan(fmt.Sprintf("http://%s.local", baseHost)))
 
 	// Setup signal handling
 	sigChan := make(chan os.Signal, 1)
@@ -190,8 +208,24 @@ func unregister(name string) {
 	ipc.SendRequest(conn, "unregister", req)
 }
 
+// parseNameAndDomain parses name in formats:
+//   - "api.myapp" -> ("api", "myapp")  // dot notation
+//   - "api" -> ("api", "")             // simple name
+//
+// If explicitDomain is provided, it takes precedence over dot notation.
+func parseNameAndDomain(name, explicitDomain string) (string, string) {
+	if explicitDomain != "" {
+		return name, explicitDomain
+	}
+	if idx := strings.Index(name, "."); idx != -1 {
+		return name[:idx], name[idx+1:]
+	}
+	return name, ""
+}
+
 func init() {
 	runCmd.Flags().StringVarP(&runName, "name", "n", "", "custom project name (default: from folder)")
+	runCmd.Flags().StringVar(&runDomain, "domain", "", "parent domain for subdomain routing (e.g., 'myapp' for <name>.myapp.localhost)")
 	runCmd.Flags().StringVar(&runRestart, "restart", "no", "restart policy: no, always, on-failure")
 	runCmd.Flags().BoolVar(&runTLS, "tls", false, "enable HTTPS for this project")
 	runCmd.Flags().StringVar(&runPortRange, "port-range", "4000-4999", "port range (min-max)")

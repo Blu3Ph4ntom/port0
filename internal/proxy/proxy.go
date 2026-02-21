@@ -36,15 +36,33 @@ func (p *Proxy) UpdateState(st *state.State) {
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	name := extractName(r.Host)
+	name, domain := extractNameAndDomain(r.Host)
 	if name == "" {
 		writeError(w, http.StatusBadRequest, "missing host header")
 		return
 	}
 
 	st := p.state.Load()
-	proj, ok := st.Projects[name]
-	if !ok {
+
+	// Try to find project by name + domain (subdomain routing)
+	// e.g., host="api.myapp.localhost" -> name="api", domain="myapp"
+	// looks for project "api" with Domain="myapp"
+	var proj *state.Project
+	for _, p := range st.Projects {
+		if p.Name == name && p.Domain == domain {
+			proj = p
+			break
+		}
+	}
+
+	// Fallback: look for project matching just the name (no domain/subdomain)
+	if proj == nil {
+		if p, ok := st.Projects[name]; ok && p.Domain == "" {
+			proj = p
+		}
+	}
+
+	if proj == nil {
 		writeError(w, http.StatusNotFound, fmt.Sprintf("no project named %q", name))
 		return
 	}
@@ -91,7 +109,7 @@ func (p *Proxy) StartTLS(addr string) error {
 		Handler: p,
 		TLSConfig: &tls.Config{
 			GetCertificate: func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-				name := extractName(hello.ServerName)
+				name, _ := extractNameAndDomain(hello.ServerName)
 				c, err := cert.Load(name)
 				if err != nil {
 					return nil, fmt.Errorf("proxy: load cert for %s: %w", name, err)
@@ -161,7 +179,7 @@ func (p *Proxy) tunnelWebSocket(w http.ResponseWriter, r *http.Request, port int
 	<-done
 }
 
-func extractName(host string) string {
+func extractNameAndDomain(host string) (name, domain string) {
 	if idx := strings.LastIndex(host, ":"); idx != -1 {
 		host = host[:idx]
 	}
@@ -176,16 +194,13 @@ func extractName(host string) string {
 		}
 	}
 
-	// Subdomain support: api.myapp -> api, admin.myapp -> admin
-	// The FIRST segment is the project name (subdomain routing)
-	// This allows monorepos to run multiple projects under one parent domain:
-	//   api.myapp.localhost -> "api" project
-	//   web.myapp.localhost -> "web" project
-	//   myapp.localhost -> "myapp" project (no subdomain)
+	// Parse subdomain.domain format
+	// e.g., "api.myapp" -> name="api", domain="myapp"
+	// e.g., "myapp" -> name="myapp", domain=""
 	if idx := strings.Index(host, "."); idx != -1 {
-		return host[:idx]
+		return host[:idx], host[idx+1:]
 	}
-	return host
+	return host, ""
 }
 
 func isWebSocket(r *http.Request) bool {

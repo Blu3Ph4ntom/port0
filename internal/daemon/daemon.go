@@ -199,6 +199,7 @@ func (d *Daemon) handleSpawn(conn net.Conn, payload json.RawMessage) {
 		Cwd:     req.Cwd,
 		Restart: req.Restart,
 		LogFile: filepath.Join(home, ".port0", "logs", name+".log"),
+		Domain:  req.Domain,
 	}
 
 	if req.TLS {
@@ -221,19 +222,28 @@ func (d *Daemon) handleSpawn(conn net.Conn, payload json.RawMessage) {
 		}
 	}()
 
+	// Build URLs - if domain is set, use subdomain format
+	baseHost := name
+	if req.Domain != "" {
+		baseHost = name + "." + req.Domain
+	}
+
 	result := map[string]interface{}{
 		"name":      name,
 		"port":      port,
-		"url":       fmt.Sprintf("http://%s.localhost", name),
-		"url_web":   fmt.Sprintf("http://%s.web", name),
-		"url_local": fmt.Sprintf("http://%s.local", name),
+		"url":       fmt.Sprintf("http://%s.localhost", baseHost),
+		"url_web":   fmt.Sprintf("http://%s.web", baseHost),
+		"url_local": fmt.Sprintf("http://%s.local", baseHost),
 		"cmd":       req.Cmd,
 		"pid":       proj.PID,
 	}
+	if req.Domain != "" {
+		result["domain"] = req.Domain
+	}
 	if req.TLS {
-		result["url"] = fmt.Sprintf("https://%s.localhost", name)
-		result["url_web"] = fmt.Sprintf("https://%s.web", name)
-		result["url_local"] = fmt.Sprintf("https://%s.local", name)
+		result["url"] = fmt.Sprintf("https://%s.localhost", baseHost)
+		result["url_web"] = fmt.Sprintf("https://%s.web", baseHost)
+		result["url_local"] = fmt.Sprintf("https://%s.local", baseHost)
 		result["tls"] = true
 	}
 
@@ -465,6 +475,7 @@ func (d *Daemon) handleRegister(conn net.Conn, payload json.RawMessage) {
 		Restart:   "no",
 		StartedAt: time.Now(),
 		LogFile:   filepath.Join(home, ".port0", "logs", name+".log"),
+		Domain:    req.Domain,
 	}
 
 	if err := d.store.Set(proj); err != nil {
@@ -473,12 +484,21 @@ func (d *Daemon) handleRegister(conn net.Conn, payload json.RawMessage) {
 	}
 	d.syncState()
 
+	// Build URLs - if domain is set, use subdomain format
+	baseHost := name
+	if req.Domain != "" {
+		baseHost = name + "." + req.Domain
+	}
+
 	result := map[string]interface{}{
 		"name":      name,
 		"port":      port,
-		"url":       fmt.Sprintf("http://%s.localhost", name),
-		"url_web":   fmt.Sprintf("http://%s.web", name),
-		"url_local": fmt.Sprintf("http://%s.local", name),
+		"url":       fmt.Sprintf("http://%s.localhost", baseHost),
+		"url_web":   fmt.Sprintf("http://%s.web", baseHost),
+		"url_local": fmt.Sprintf("http://%s.local", baseHost),
+	}
+	if req.Domain != "" {
+		result["domain"] = req.Domain
 	}
 
 	ipc.WriteOK(conn, result)

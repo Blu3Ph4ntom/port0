@@ -10,15 +10,17 @@ port0 auto-assigns a free port, injects `PORT` into your process, and reverse-pr
 
 macOS / linux
 ```bash
-curl -fsSL https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.sh | bash
+curl -fsSL https://port0.bluephantom.dev/install.sh | bash
+# Alternative: curl -fsSL https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.sh | bash
 ```
 
 windows (powershell)
-```powershell
-irm https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.bat | iex
+```bash
+irm https://port0.bluephantom.dev/install.bat | iex
+# Alternative: irm https://raw.githubusercontent.com/blu3ph4ntom/port0/main/install.bat | iex
 ```
 
-The scripts detect OS/arch, download the proper release binary and place it in a common path (may prompt for sudo).
+The scripts detect OS/arch, download the proper release binary from `port0.bluephantom.dev` and place it in a common path (may prompt for sudo).
 
 ---
 
@@ -32,7 +34,7 @@ go build -o port0 .
 sudo mv port0 /usr/local/bin/port0
 ```
 
-windows manual:
+windows:
 ```powershell
 git clone https://github.com/blu3ph4ntom/port0.git
 cd port0
@@ -58,39 +60,33 @@ port0 go run ./cmd/server
 
 ### subdomain support (monorepos / multi-project)
 
-The first segment of the hostname is the project name. This lets you run multiple related projects under a shared parent domain:
+Group related projects under a shared parent domain for clean URLs in monorepos.
 
+**Quick syntax** (dot notation):
+```bash
+port0 -n api.myapp npm run dev    # api.myapp.localhost
+port0 -n web.myapp npm run dev    # web.myapp.localhost
 ```
-myapp.localhost       -> "myapp" project
-api.myapp.localhost   -> "api" project (separate server)
-web.myapp.localhost   -> "web" project (separate server)
-admin.myapp.localhost -> "admin" project (separate server)
+
+**Explicit syntax** (using --domain flag):
+```bash
+port0 -n api --domain myapp npm run dev    # api.myapp.localhost
+port0 -n web --domain myapp npm run dev    # web.myapp.localhost
+```
+
+**Without subdomain** (simple):
+```bash
+port0 -n myapp npm run dev        # myapp.localhost
+port0 npm run dev                 # uses folder name
 ```
 
 Use this for:
-- **Monorepos**: Run `api` and `web` as separate processes with clean URLs
-- **Micro-frontends**: Each service gets its own project name and subdomain
+- **Monorepos**: Run `api` and `web` as separate processes with clean URLs under one domain
+- **Micro-frontends**: Each service gets its own subdomain under a shared domain
 - **Multi-repo under one domain**: Different repos sharing a parent domain
+- **Environment separation**: `api.staging.localhost` vs `api.production.localhost`
 
-Example workflow for a monorepo:
-```bash
-# Terminal 1 - start API server
-cd packages/api
-port0 -n api npm run dev
-# Available at: api.myapp.localhost
-
-# Terminal 2 - start web server
-cd packages/web
-port0 -n web npm run dev
-# Available at: web.myapp.localhost
-
-# Terminal 3 - start admin dashboard
-cd packages/admin
-port0 -n admin npm run dev
-# Available at: admin.myapp.localhost
-```
-
-All three share `myapp.localhost` as the parent domain but route to different projects.
+Both `-n name.domain` and `-n name --domain domain` work the same way. Use whichever feels more natural.
 
 ---
 
