@@ -154,7 +154,9 @@ func (m *Manager) Kill(name string) error {
 		return fmt.Errorf("process: %s has no process", name)
 	}
 
-	child.Cmd.Process.Signal(os.Interrupt)
+	if err := child.Cmd.Process.Signal(os.Interrupt); err != nil {
+		slog.Warn("process: signal interrupt failed", "name", name, "err", err)
+	}
 
 	select {
 	case <-child.Done:

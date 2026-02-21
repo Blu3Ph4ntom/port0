@@ -55,7 +55,9 @@ func (s *Server) StartWithFallback(preferred, fallback string) (string, error) {
 		}
 		return fallback, nil
 	}
-	ln.Close()
+	if err := ln.Close(); err != nil {
+		slog.Warn("dns: failed to close temporary listener", "err", err)
+	}
 
 	if err := s.Start(preferred); err != nil {
 		slog.Warn("dns: preferred addr failed, trying fallback", "err", err)
@@ -94,7 +96,9 @@ func (s *Server) handleDNS(w mdns.ResponseWriter, r *mdns.Msg) {
 		name := strings.ToLower(q.Name)
 		if !strings.HasSuffix(name, ".web.") && !strings.HasSuffix(name, ".local.") {
 			msg.Rcode = mdns.RcodeServerFailure
-			w.WriteMsg(msg)
+			if err := w.WriteMsg(msg); err != nil {
+				slog.Error("dns: write response failed", "err", err)
+			}
 			return
 		}
 
@@ -122,7 +126,9 @@ func (s *Server) handleDNS(w mdns.ResponseWriter, r *mdns.Msg) {
 		}
 	}
 
-	w.WriteMsg(msg)
+	if err := w.WriteMsg(msg); err != nil {
+		slog.Error("dns: write response failed", "err", err)
+	}
 }
 
 func (s *Server) Addr() string {

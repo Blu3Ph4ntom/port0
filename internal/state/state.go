@@ -37,7 +37,10 @@ func NewStore(dir string) *Store {
 }
 
 func DefaultStore() *Store {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = "."
+	}
 	return NewStore(filepath.Join(home, ".port0"))
 }
 

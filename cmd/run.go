@@ -85,7 +85,9 @@ func runServer(cmd *cobra.Command, args []string) error {
 	}
 
 	var data map[string]interface{}
-	json.Unmarshal(resp.Data, &data)
+	if err := json.Unmarshal(resp.Data, &data); err != nil {
+		return fmt.Errorf("error: failed to parse response: %w", err)
+	}
 	respName := data["name"].(string)
 	port := int(data["port"].(float64))
 	url := data["url"].(string)
@@ -140,7 +142,9 @@ func runForeground(args []string, cwd string, name, domain string) error {
 	}
 
 	var data map[string]interface{}
-	json.Unmarshal(resp.Data, &data)
+	if err := json.Unmarshal(resp.Data, &data); err != nil {
+		return fmt.Errorf("error: failed to parse response: %w", err)
+	}
 	port := int(data["port"].(float64))
 	url := data["url"].(string)
 

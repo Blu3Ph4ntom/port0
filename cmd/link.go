@@ -55,7 +55,9 @@ var linkCmd = &cobra.Command{
 		}
 
 		var data map[string]interface{}
-		json.Unmarshal(resp.Data, &data)
+		if err := json.Unmarshal(resp.Data, &data); err != nil {
+			return fmt.Errorf("error: failed to parse response: %w", err)
+		}
 		fmt.Printf("linked %s -> %s (port %v)\n", data["name"], data["url"], data["port"])
 
 		return nil

@@ -34,7 +34,10 @@ type Daemon struct {
 }
 
 func Run() error {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("daemon: get home dir: %w", err)
+	}
 	base := filepath.Join(home, ".port0")
 	os.MkdirAll(base, 0755)
 	os.MkdirAll(filepath.Join(base, "logs"), 0755)
@@ -191,7 +194,11 @@ func (d *Daemon) handleSpawn(conn net.Conn, payload json.RawMessage) {
 		return
 	}
 
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("failed to get home directory: %v", err))
+		return
+	}
 	proj := &state.Project{
 		Name:    name,
 		Port:    port,
@@ -371,7 +378,11 @@ func (d *Daemon) handleLink(conn net.Conn, payload json.RawMessage) {
 		return
 	}
 
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("failed to get home directory: %v", err))
+		return
+	}
 	proj := &state.Project{
 		Name:      req.Name,
 		Port:      req.Port,
@@ -465,7 +476,11 @@ func (d *Daemon) handleRegister(conn net.Conn, payload json.RawMessage) {
 		return
 	}
 
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("failed to get home directory: %v", err))
+		return
+	}
 	proj := &state.Project{
 		Name:      name,
 		Port:      port,
@@ -591,8 +606,7 @@ func (d *Daemon) shutdown() {
 }
 
 func tailLines(s string, n int) []string {
-	scanner := bufio.NewScanner(nil)
-	_ = scanner
+
 	lines := make([]string, 0)
 	start := 0
 	for i := 0; i < len(s); i++ {

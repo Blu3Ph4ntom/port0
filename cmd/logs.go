@@ -59,7 +59,9 @@ var logsCmd = &cobra.Command{
 		}
 
 		var data map[string]interface{}
-		json.Unmarshal(resp.Data, &data)
+		if err := json.Unmarshal(resp.Data, &data); err != nil {
+			return fmt.Errorf("error: failed to parse response: %w", err)
+		}
 		if lines, ok := data["lines"].([]interface{}); ok {
 			for _, line := range lines {
 				fmt.Println(line)

@@ -100,7 +100,9 @@ var daemonStatusCmd = &cobra.Command{
 		}
 
 		var data map[string]interface{}
-		json.Unmarshal(resp.Data, &data)
+		if err := json.Unmarshal(resp.Data, &data); err != nil {
+			return fmt.Errorf("error: failed to parse response: %w", err)
+		}
 		pid := int(data["pid"].(float64))
 		projects := int(data["projects"].(float64))
 		running := int(data["running"].(float64))

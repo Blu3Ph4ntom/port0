@@ -48,7 +48,9 @@ var killCmd = &cobra.Command{
 		}
 
 		var data map[string]interface{}
-		json.Unmarshal(resp.Data, &data)
+		if err := json.Unmarshal(resp.Data, &data); err != nil {
+			return fmt.Errorf("error: failed to parse response: %w", err)
+		}
 
 		if data["removed"] == true {
 			fmt.Printf("removed %s\n", data["name"])

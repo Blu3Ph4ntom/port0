@@ -16,7 +16,10 @@ import (
 )
 
 func certsDir() string {
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = "."
+	}
 	return filepath.Join(home, ".port0", "certs")
 }
 

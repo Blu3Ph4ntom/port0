@@ -72,7 +72,11 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	target, _ := url.Parse(fmt.Sprintf("http://127.0.0.1:%d", proj.Port))
+	target, err := url.Parse(fmt.Sprintf("http://127.0.0.1:%d", proj.Port))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Sprintf("invalid target URL: %v", err))
+		return
+	}
 	rp := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
 			req.URL.Scheme = target.Scheme
@@ -210,5 +214,7 @@ func isWebSocket(r *http.Request) bool {
 func writeError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(map[string]string{"error": msg})
+	if err := json.NewEncoder(w).Encode(map[string]string{"error": msg}); err != nil {
+		slog.Error("failed to encode error response", "err", err)
+	}
 }

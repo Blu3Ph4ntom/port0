@@ -42,7 +42,9 @@ var lsCmd = &cobra.Command{
 		}
 
 		var projects []map[string]interface{}
-		json.Unmarshal(resp.Data, &projects)
+		if err := json.Unmarshal(resp.Data, &projects); err != nil {
+			return fmt.Errorf("error: failed to parse response: %w", err)
+		}
 
 		if len(projects) == 0 {
 			fmt.Println("no projects")
