@@ -7,12 +7,16 @@ on:
       - "**.md"
       - "LICENSE"
       - ".gitignore"
+      - "web/**"
+      - "docs/**"
   pull_request:
     branches: [main]
     paths-ignore:
       - "**.md"
       - "LICENSE"
       - ".gitignore"
+      - "web/**"
+      - "docs/**"
 
 jobs:
   lint:
