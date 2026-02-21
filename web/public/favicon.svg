@@ -1,5 +1,8 @@
-<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" fill="#000000"/>
-  <circle cx="60" cy="60" r="18" fill="#ffffff"/>
-  <circle cx="60" cy="60" r="6" fill="#000000"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <style>
+        rect { stroke: #000; }
+        @media (prefers-color-scheme: dark) { rect { stroke: #fff; } }
+    </style>
+    <rect x="2" y="2" width="20" height="20" fill="none" stroke-width="2"/>
+    <rect x="8" y="8" width="8" height="8" fill="none" stroke-width="2"/>
 </svg>

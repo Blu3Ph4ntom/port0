@@ -14,21 +14,25 @@
                 data-theme-mode="system"
                 aria-label="System"
             >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="7"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                    />
-                    <path
-                        d="M12 5v2M12 17v2M5 12h2M17 12h2"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linecap="round"
-                    />
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <rect
+                        x="2"
+                        y="3"
+                        width="20"
+                        height="14"
+                        rx="2"
+                        ry="2"
+                    ></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
                 </svg>
             </button>
             <button
@@ -129,7 +133,10 @@
 
         function applyTheme(mode) {
             if (mode === "system") {
-                root.removeAttribute("data-theme");
+                const prefersDark = window.matchMedia(
+                    "(prefers-color-scheme: dark)",
+                ).matches;
+                root.setAttribute("data-theme", prefersDark ? "dark" : "light");
             } else {
                 root.setAttribute("data-theme", mode);
             }
@@ -143,6 +150,14 @@
             });
         }
 
+        window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", () => {
+                if (localStorage.getItem(storageKey) === "system") {
+                    applyTheme("system");
+                }
+            });
+
         themeOptions.forEach((opt) => {
             opt.addEventListener("click", () =>
                 applyTheme(opt.dataset.themeMode),
@@ -152,52 +167,58 @@
         const savedTheme = localStorage.getItem(storageKey) || "system";
         applyTheme(savedTheme);
 
-        // Intersection Observer for Nav
+        // Section Switching
         const sections = document.querySelectorAll(".panel-section");
         const navLinks = document.querySelectorAll(".rail-nav a");
 
-        const observerOptions = {
-            root: null,
-            rootMargin: "-20% 0px -70% 0px",
-            threshold: 0,
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.getAttribute("id");
-                    navLinks.forEach((link) => {
-                        link.classList.toggle(
-                            "is-active",
-                            link.getAttribute("href") === "#" + id,
-                        );
-                    });
-                    sections.forEach((sec) => {
-                        sec.classList.toggle(
-                            "is-active",
-                            sec.getAttribute("id") === id,
-                        );
-                    });
+        function activateSection(id) {
+            sections.forEach((sec) => {
+                if (sec.getAttribute("id") === id) {
+                    sec.style.display = "block";
+                    setTimeout(() => sec.classList.add("is-active"), 10);
+                } else {
+                    sec.classList.remove("is-active");
+                    sec.style.display = "none";
                 }
             });
-        }, observerOptions);
+            navLinks.forEach((link) => {
+                link.classList.toggle(
+                    "is-active",
+                    link.getAttribute("href") === "#" + id,
+                );
+            });
+        }
 
-        sections.forEach((section) => observer.observe(section));
-
-        // Smooth Scroll for Internal Links
-        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-            anchor.addEventListener("click", function (e) {
+        navLinks.forEach((link) => {
+            link.addEventListener("click", function (e) {
                 e.preventDefault();
                 const targetId = this.getAttribute("href").substring(1);
-                const targetElement = document.getElementById(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 32,
-                        behavior: "smooth",
-                    });
-                    history.pushState(null, null, "#" + targetId);
-                }
+                activateSection(targetId);
+                history.replaceState(null, null, "#" + targetId);
             });
+        });
+
+        const hash = window.location.hash.substring(1);
+        if (hash && document.getElementById(hash)) {
+            activateSection(hash);
+        } else {
+            activateSection("overview");
+        }
+
+        // Copy Buttons
+        document.querySelectorAll("pre").forEach((pre) => {
+            const btn = document.createElement("button");
+            btn.className = "copy-btn";
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+            btn.addEventListener("click", () => {
+                const code = pre.querySelector("code")
+                    ? pre.querySelector("code").innerText
+                    : pre.innerText;
+                navigator.clipboard.writeText(code);
+                btn.classList.add("copied");
+                setTimeout(() => btn.classList.remove("copied"), 2000);
+            });
+            pre.appendChild(btn);
         });
     })();
 </script>

@@ -20,13 +20,13 @@ title: "port0"
 </div>
 </div>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
 <section id="install" class="panel-section">
 <h2>Install</h2>
-<div class="grid two">
+<div class="grid">
 <div>
 <h3>One-line installer</h3>
 <p>Detects OS/arch, downloads the proper release binary, and installs to a common path (may prompt for sudo).</p>
@@ -46,7 +46,7 @@ go build -o port0.exe .
 </div>
 </div>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
@@ -63,14 +63,14 @@ port0 npm run dev
 # or
 port0 go run ./cmd/server</code></pre>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
 <section id="subdomains" class="panel-section">
 <h2>Subdomain support</h2>
 <p>Group related projects under a shared parent domain for clean URLs in monorepos.</p>
-<div class="grid two">
+<div class="grid">
 <div>
 <h3>Quick syntax</h3>
 <pre><code>port0 -n api.myapp npm run dev    # api.myapp.localhost
@@ -86,7 +86,7 @@ port0 -n web --domain myapp npm run dev    # web.myapp.localhost</code></pre>
 port0 npm run dev                 # uses folder name</code></pre>
 <p>Use this for monorepos, micro-frontends, multi-repo domains, or environment separation.</p>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
@@ -100,13 +100,13 @@ port0 npm run dev                 # uses folder name</code></pre>
 </ul>
 <p>Undo: <code>sudo port0 teardown</code> (or run <code>port0 teardown</code> in Administrator PowerShell on Windows).</p>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
 <section id="commands" class="panel-section">
 <h2>Common commands</h2>
-<div class="grid two">
+<div class="grid">
 <div>
 <ul>
 <li><code>port0 &lt;cmd...&gt;</code> — run command with <code>PORT</code> injected</li>
@@ -126,13 +126,13 @@ port0 npm run dev                 # uses folder name</code></pre>
 </div>
 <p><code>port0 daemon start|stop|status</code> — manage daemon</p>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>
 
 <section id="examples" class="panel-section">
 <h2>Integration examples</h2>
-<div class="grid two">
+<div class="grid">
 <div>
 <h3>package.json</h3>
 <pre><code>{
@@ -172,6 +172,6 @@ port0 python -m myapp</code></pre>
 </div>
 </div>
 <div class="section-footer">
-<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank">Edit on GitHub</a>
+<a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
 </section>

@@ -18,7 +18,7 @@ examples/** linguist-vendored
 .github/** linguist-vendored
 .goreleaser.yml linguist-vendored
 
-# Website files (exclude from language stats)
+# Website / Docs files (exclude from language stats)
 web/** linguist-vendored
 
 # Installer and admin scripts (not source)
