@@ -1,0 +1,47 @@
+# port0 .gitattributes
+# Purpose: keep GitHub language statistics focused on Go by excluding docs,
+# examples, binaries and other non-Go artifacts from linguist analysis.
+
+# Treat all Markdown as documentation (excluded from language bar)
+*.md linguist-documentation
+
+# Mark documentation/config files as documentation
+LICENSE linguist-documentation
+README.md linguist-documentation
+AGENTS.md linguist-documentation
+CLAUDE.md linguist-documentation
+INSTALL.md linguist-documentation
+WINDOWS.md linguist-documentation
+
+# Exclude examples, CI and helper scripts from language statistics
+examples/** linguist-vendored
+.github/** linguist-vendored
+.goreleaser.yml linguist-vendored
+
+# Installer and admin scripts (not source)
+install.sh linguist-vendored
+install.bat linguist-vendored
+*.ps1 linguist-vendored
+*.sh linguist-vendored
+*.bat linguist-vendored
+
+# Build artifacts / binaries / backups (must not count towards languages)
+*.exe linguist-vendored
+*.exe~ linguist-vendored
+*~ linguist-vendored
+*.log linguist-vendored
+
+# Editor/project config (non-source)
+*.swp linguist-vendored
+*.swo linguist-vendored
+.vscode/** linguist-vendored
+
+# Treat Go sources explicitly as Go (helps ensure detection)
+*.go linguist-language=Go
+
+# Any vendor/third-party code should not affect language stats
+vendor/** linguist-vendored
+third_party/** linguist-vendored
+
+# If you want to keep some example code visible in language stats,
+# remove or adjust the `examples/** linguist-vendored` line above.
