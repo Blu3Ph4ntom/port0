@@ -4,7 +4,7 @@
 
 Auto-assigns ports, injects `PORT` env var, reverse-proxies to human-readable hostnames.
 
-```mermaid
+```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              YOUR WORKFLOW                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
