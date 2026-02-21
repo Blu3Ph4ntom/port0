@@ -66,7 +66,7 @@ Only required to enable `.web` / `.local` or to allow binding privileged ports (
 - linux (systemd): `sudo port0 setup`
 - windows: run Administrator PowerShell, then `port0 setup`
 
-Undo: `sudo port0 teardown` (or run teardown in Administrator PowerShell on Windows).
+Undo: `sudo port0 teardown` (or run port0 teardown in Administrator PowerShell on Windows).
 
 ---
 
