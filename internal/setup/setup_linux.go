@@ -60,7 +60,9 @@ func Setup() error {
 	// Create systemd user service
 	home, _ := os.UserHomeDir()
 	serviceDir := filepath.Join(home, ".config", "systemd", "user")
-	os.MkdirAll(serviceDir, 0755)
+	if err := os.MkdirAll(serviceDir, 0755); err != nil {
+		fmt.Printf("  Warning: could not create user service directory: %v\n", err)
+	}
 
 	serviceFile := filepath.Join(serviceDir, "port0.service")
 	serviceContent := fmt.Sprintf(`[Unit]
@@ -81,8 +83,8 @@ WantedBy=default.target
 		fmt.Println("  ✓ Systemd service written to", serviceFile)
 	}
 
-	exec.Command("systemctl", "--user", "daemon-reload").Run()
-	exec.Command("systemctl", "--user", "enable", "port0").Run()
+	_ = exec.Command("systemctl", "--user", "daemon-reload").Run()
+	_ = exec.Command("systemctl", "--user", "enable", "port0").Run()
 
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -94,7 +96,7 @@ WantedBy=default.target
 	fmt.Println()
 	fmt.Println("All three TLDs are now available for your projects!")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println()
+	fmt.Println("")
 	fmt.Println("To start the daemon now:")
 	fmt.Println("  systemctl --user start port0")
 
@@ -107,15 +109,15 @@ func Teardown() error {
 
 	// Stop and disable systemd user service
 	fmt.Println("Stopping systemd user service...")
-	exec.Command("systemctl", "--user", "stop", "port0").Run()
-	exec.Command("systemctl", "--user", "disable", "port0").Run()
+	_ = exec.Command("systemctl", "--user", "stop", "port0").Run()
+	_ = exec.Command("systemctl", "--user", "disable", "port0").Run()
 
 	home, _ := os.UserHomeDir()
 	serviceFile := filepath.Join(home, ".config", "systemd", "user", "port0.service")
 	if err := os.Remove(serviceFile); err == nil {
 		fmt.Println("  ✓ Removed", serviceFile)
 	}
-	exec.Command("systemctl", "--user", "daemon-reload").Run()
+	_ = exec.Command("systemctl", "--user", "daemon-reload").Run()
 
 	// Remove resolved config
 	fmt.Println("Removing DNS config...")
@@ -125,13 +127,13 @@ func Teardown() error {
 
 	// Restart systemd-resolved
 	fmt.Println("Restarting systemd-resolved...")
-	exec.Command("systemctl", "restart", "systemd-resolved").Run()
+	_ = exec.Command("systemctl", "restart", "systemd-resolved").Run()
 	fmt.Println("  ✓ systemd-resolved restarted")
 
 	// Remove capability from binary
 	bin, _ := os.Executable()
 	fmt.Println("Removing capability from binary...")
-	exec.Command("setcap", "-r", bin).Run()
+	_ = exec.Command("setcap", "-r", bin).Run()
 	fmt.Println("  ✓ Capability removed")
 
 	fmt.Println()
