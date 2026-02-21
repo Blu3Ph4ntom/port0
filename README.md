@@ -2,75 +2,61 @@
 
 No ports. Just names.
 
-port0 auto-assigns a free port, injects `PORT` into your process, and reverse-proxies HTTP(S) traffic on port 80 to a human-friendly hostname (for example: `project.localhost`). Zero-config if you use `.localhost` (recommended).
+port0 auto-assigns a free port, injects `PORT` into your process, and reverse-proxies HTTP(S) traffic on port 80 to a human-friendly hostname (for example: `project.localhost`).
 
 ---
 
-## Quick install
+## One-line installer
 
-Build from source (recommended):
+macOS / Linux (downloads release binary and installs to /usr/local/bin):
 ```bash
-git clone https://github.com/Blu3Ph4ntom/port0.git
+curl -fsSL https://github.com/blu3ph4ntom/port0/releases/latest/download/port0-linux-amd64 -o /tmp/port0 && \
+chmod +x /tmp/port0 && sudo mv /tmp/port0 /usr/local/bin/port0
+```
+
+Windows (PowerShell):
+```powershell
+Invoke-WebRequest -Uri "https://github.com/blu3ph4ntom/port0/releases/latest/download/port0-windows-amd64.exe" -OutFile "$env:TEMP\port0.exe"
+Move-Item "$env:TEMP\port0.exe" "$env:USERPROFILE\bin\port0.exe"
+```
+
+---
+
+## Manual (build from source)
+
+```bash
+git clone https://github.com/blu3ph4ntom/port0.git
 cd port0
 go build -o port0 .
 # optional: install system-wide
 sudo mv port0 /usr/local/bin/port0
 ```
 
-One-line convenience installer (downloads release binary):
-```bash
-# macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/Blu3Ph4ntom/port0/main/install.sh | bash
-
-# Windows (PowerShell)
-irm https://raw.githubusercontent.com/Blu3Ph4ntom/port0/main/install.bat | iex
-```
-
 ---
 
-## Quick start
-
-Run any dev command; port0 injects `PORT` and exposes the service at three TLDs:
-```bash
-cd ~/projects/myapp
-port0 npm run dev
-# or
-port0 go run ./cmd/server
-```
-
-Primary URL (recommended): `http://myapp.localhost`  
-Alternatives: `http://myapp.web`, `http://myapp.local`
-
----
-
-## How it works (simple diagram)
+## How it works
 
 ```mermaid
-flowchart TD
+flowchart TB
   Run["port0 <cmd>"] --> Name["Derive name from folder"]
   Name --> Assign["Assign free port (4000-4999)"]
-  Assign --> Spawn["Spawn process with PORT"]
-  Spawn --> Proxy["Reverse proxy :80 → 127.0.0.1:PORT"]
+  Assign --> Spawn["Spawn process with PORT=<port>"]
+  Spawn --> Proxy["Reverse proxy :80 -> 127.0.0.1:<port>"]
   Browser["Browser request to name.localhost"] --> Proxy
 ```
 
 ---
 
-## One-time setup (only if you want `.web` / `.local`)
+## One-time setup (only if you need `.web` / `.local`)
 
-`.localhost` works without setup. Setup is required only to enable `.web` and `.local` resolution and to allow binding privileged ports.
+`.localhost` works without setup.
 
 - macOS
-  - Run: `sudo port0 setup`
-  - Installs `/etc/resolver/web` and `/etc/resolver/local` and a LaunchDaemon.
-
+  - `sudo port0 setup` (creates `/etc/resolver/web` and `/etc/resolver/local` and installs a LaunchDaemon)
 - Linux (systemd)
-  - Run: `sudo port0 setup`
-  - Writes systemd-resolved config, sets CAP_NET_BIND_SERVICE, installs a user service.
-
+  - `sudo port0 setup` (writes systemd-resolved drop-in, sets CAP_NET_BIND_SERVICE, installs a user service)
 - Windows
-  - Open Administrator PowerShell and run: `port0 setup`
-  - Adds firewall rules and NRPT rules (Add-DnsClientNrptRule) for `.web` and `.local`.
+  - Run Administrator PowerShell and run `port0 setup` (adds firewall rules and NRPT rules)
 
 Remove system configuration:
 ```bash
@@ -80,17 +66,46 @@ sudo port0 teardown
 
 ---
 
-## Usage (common commands)
+## Usage (common)
 
-- `port0 <cmd...>` — run command with PORT injection (default)
-- `port0 -n <name> <cmd...>` — set custom name
-- `port0 -d <cmd...>` — run detached/background
+Run in foreground (shows logs):
+```bash
+port0 npm run dev
+```
+
+Run detached:
+```bash
+port0 -d npm run dev
+```
+
+Custom name:
+```bash
+port0 -n myapi go run ./cmd/server
+```
+
+List / logs / kill:
+```bash
+port0 ls
+port0 logs myapi
+port0 kill myapi
+```
+
+Primary URL exposed: `http://myapp.localhost`  
+Alternative TLDs: `http://myapp.web`, `http://myapp.local`
+
+---
+
+## Commands (summary)
+
+- `port0 <cmd...>` — run command with PORT injection
+- `port0 -n <name> <cmd...>` — custom name
+- `port0 -d <cmd...>` — detached/background
 - `port0 ls` — list projects
-- `port0 logs <name>` — show logs (`-f` to follow)
+- `port0 logs <name>` — view logs (`-f` to follow)
 - `port0 kill <name>` — stop project
-- `port0 link <name> <port>` — link an existing server to a name
-- `port0 setup` / `port0 teardown` — system config
-- `port0 update` — download & replace with latest release binary
+- `port0 link <name> <port>` — link existing server
+- `port0 setup` / `port0 teardown` — system configuration
+- `port0 update` — download & replace binary with latest release
 - `port0 daemon start|stop|status` — manage daemon
 
 ---
@@ -100,35 +115,22 @@ sudo port0 teardown
 port0 only injects the `PORT` environment variable. Ensure your app reads it:
 - Node: `process.env.PORT`
 - Go: `os.Getenv("PORT")`
-- Python: `os.environ.get("PORT")`
-- Rust: `env::var("PORT")`
+- Python: `os.environ.get('PORT')`
 
-For monorepos, use `-n` to choose distinct names (e.g. `port0 -n api ...`).
+For monorepos use `-n` to choose distinct names.
 
 ---
 
 ## Update & releases
 
-- `port0 update` — downloads the latest release binary and replaces the current executable (may require sudo if installed system-wide).
-- To build and publish releases: tag and push (e.g. `git tag v0.1.0 && git push origin v0.1.0`) and run your release CI.
+- `port0 update` downloads the latest release binary and replaces the current executable (may require sudo if installed system-wide).
+- To build and publish releases: tag and push (for example `git tag v0.1.0 && git push origin v0.1.0`) and run your release CI.
 
 ---
 
-## Troubleshooting (short)
+## Language stats
 
-- "daemon not running": run `port0 daemon start`.
-- DNS `.web`/`.local` not resolving:
-  - Windows: `Get-DnsClientNrptRule` in Admin PowerShell.
-  - macOS: check `/etc/resolver/web` and `/etc/resolver/local`.
-  - Linux: check `/etc/systemd/resolved.conf.d/port0.conf` and `resolvectl`.
-- Permission denied binding port 80: run `port0 setup` (grants capability or configures daemon).
-
----
-
-## Files & examples
-
-- Examples are in `examples/` for quick testing but are not required for normal usage.
-- Prefer building from source for reproducibility.
+A `.gitattributes` file marks docs, installer scripts and `examples/` as vendored/documentation so GitHub Linguist focuses on Go. GitHub may take a short time to reindex the language graph.
 
 ---
 
