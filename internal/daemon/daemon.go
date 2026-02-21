@@ -123,6 +123,10 @@ func (d *Daemon) handleConn(conn net.Conn) {
 	switch req.Op {
 	case "spawn":
 		d.handleSpawn(conn, req.Payload)
+	case "register":
+		d.handleRegister(conn, req.Payload)
+	case "unregister":
+		d.handleUnregister(conn, req.Payload)
 	case "kill":
 		d.handleKill(conn, req.Payload)
 	case "ls":
@@ -218,14 +222,18 @@ func (d *Daemon) handleSpawn(conn net.Conn, payload json.RawMessage) {
 	}()
 
 	result := map[string]interface{}{
-		"name": name,
-		"port": port,
-		"url":  fmt.Sprintf("http://%s.localhost", name),
-		"cmd":  req.Cmd,
-		"pid":  proj.PID,
+		"name":      name,
+		"port":      port,
+		"url":       fmt.Sprintf("http://%s.localhost", name),
+		"url_web":   fmt.Sprintf("http://%s.web", name),
+		"url_local": fmt.Sprintf("http://%s.local", name),
+		"cmd":       req.Cmd,
+		"pid":       proj.PID,
 	}
 	if req.TLS {
 		result["url"] = fmt.Sprintf("https://%s.localhost", name)
+		result["url_web"] = fmt.Sprintf("https://%s.web", name)
+		result["url_local"] = fmt.Sprintf("https://%s.local", name)
 		result["tls"] = true
 	}
 
@@ -241,7 +249,10 @@ func (d *Daemon) handleKill(conn net.Conn, payload json.RawMessage) {
 
 	pid := d.manager.GetPID(req.Name)
 
-	if err := d.manager.Kill(req.Name); err != nil {
+	// Try to kill the process, but don't fail if it's already stopped
+	// when we're just trying to remove it
+	err := d.manager.Kill(req.Name)
+	if err != nil && !req.Remove {
 		ipc.WriteError(conn, err.Error())
 		return
 	}
@@ -280,6 +291,8 @@ func (d *Daemon) handleLs(conn net.Conn) {
 			"name":       p.Name,
 			"port":       p.Port,
 			"url":        fmt.Sprintf("http://%s.localhost", p.Name),
+			"url_web":    fmt.Sprintf("http://%s.web", p.Name),
+			"url_local":  fmt.Sprintf("http://%s.local", p.Name),
 			"pid":        p.PID,
 			"status":     status,
 			"started_at": p.StartedAt,
@@ -365,9 +378,11 @@ func (d *Daemon) handleLink(conn net.Conn, payload json.RawMessage) {
 	d.syncState()
 
 	ipc.WriteOK(conn, map[string]interface{}{
-		"name": req.Name,
-		"port": req.Port,
-		"url":  fmt.Sprintf("http://%s.localhost", req.Name),
+		"name":      req.Name,
+		"port":      req.Port,
+		"url":       fmt.Sprintf("http://%s.localhost", req.Name),
+		"url_web":   fmt.Sprintf("http://%s.web", req.Name),
+		"url_local": fmt.Sprintf("http://%s.local", req.Name),
 	})
 }
 
@@ -386,8 +401,108 @@ func (d *Daemon) handleOpen(conn net.Conn, payload json.RawMessage) {
 
 	url := fmt.Sprintf("http://%s.localhost", proj.Name)
 	ipc.WriteOK(conn, map[string]interface{}{
-		"name": proj.Name,
-		"url":  url,
+		"name":      proj.Name,
+		"url":       url,
+		"url_web":   fmt.Sprintf("http://%s.web", proj.Name),
+		"url_local": fmt.Sprintf("http://%s.local", proj.Name),
+	})
+}
+
+func (d *Daemon) handleRegister(conn net.Conn, payload json.RawMessage) {
+	var req ipc.RegisterRequest
+	if err := json.Unmarshal(payload, &req); err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("invalid register request: %v", err))
+		return
+	}
+
+	name := req.Name
+	if name == "" {
+		name = util.FromCwd(req.Cwd)
+	}
+
+	projects, _ := d.store.All()
+	takenNames := make(map[string]bool)
+	takenPorts := make(map[int]bool)
+	for n, p := range projects {
+		takenNames[n] = true
+		takenPorts[p.Port] = true
+	}
+
+	if existing, ok := projects[name]; ok {
+		if existing.PID != 0 {
+			ipc.WriteError(conn, fmt.Sprintf("%s is already running at http://%s.localhost (pid %d)", name, name, existing.PID))
+			return
+		}
+		if existing.Cwd != req.Cwd {
+			name = util.Deconflict(name, takenNames)
+			d.logger.Warn("name collision, deconflicted", "original", req.Name, "resolved", name)
+		}
+	}
+
+	portRange := "4000-4999"
+	if req.PortRange != "" {
+		portRange = req.PortRange
+	}
+	alloc, err := allocator.ParseRange(portRange)
+	if err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("invalid port range: %v", err))
+		return
+	}
+
+	port, err := alloc.Pick(takenPorts)
+	if err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("port allocation failed: %v", err))
+		return
+	}
+
+	home, _ := os.UserHomeDir()
+	proj := &state.Project{
+		Name:      name,
+		Port:      port,
+		Cmd:       req.Cmd,
+		Cwd:       req.Cwd,
+		PID:       0, // No PID - foreground mode
+		Restart:   "no",
+		StartedAt: time.Now(),
+		LogFile:   filepath.Join(home, ".port0", "logs", name+".log"),
+	}
+
+	if err := d.store.Set(proj); err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("register failed: %v", err))
+		return
+	}
+	d.syncState()
+
+	result := map[string]interface{}{
+		"name":      name,
+		"port":      port,
+		"url":       fmt.Sprintf("http://%s.localhost", name),
+		"url_web":   fmt.Sprintf("http://%s.web", name),
+		"url_local": fmt.Sprintf("http://%s.local", name),
+	}
+
+	ipc.WriteOK(conn, result)
+}
+
+func (d *Daemon) handleUnregister(conn net.Conn, payload json.RawMessage) {
+	var req map[string]string
+	if err := json.Unmarshal(payload, &req); err != nil {
+		ipc.WriteError(conn, fmt.Sprintf("invalid unregister request: %v", err))
+		return
+	}
+
+	name := req["name"]
+	if name == "" {
+		ipc.WriteError(conn, "name is required")
+		return
+	}
+
+	d.store.Delete(name)
+	d.syncState()
+
+	ipc.WriteOK(conn, map[string]interface{}{
+		"name":    name,
+		"removed": true,
 	})
 }
 

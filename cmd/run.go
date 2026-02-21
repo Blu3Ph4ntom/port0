@@ -1,12 +1,15 @@
 package cmd
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
+	"os/signal"
+	"syscall"
 
 	"github.com/blu3ph4ntom/port0/internal/ipc"
+	"github.com/blu3ph4ntom/port0/internal/util"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -33,6 +36,13 @@ func runServer(cmd *cobra.Command, args []string) error {
 	}
 
 	cwd, _ := os.Getwd()
+
+	// If not detached, run in foreground mode
+	if !runDetach {
+		return runForeground(args, cwd)
+	}
+
+	// Detached mode: spawn via daemon
 	req := ipc.SpawnRequest{
 		Name:      runName,
 		Cmd:       args,
@@ -74,60 +84,110 @@ func runServer(cmd *cobra.Command, args []string) error {
 	port := int(data["port"].(float64))
 	url := data["url"].(string)
 
-	green := color.New(color.FgGreen, color.Bold).SprintFunc()
 	cyan := color.New(color.FgCyan).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
+	dim := color.New(color.FgHiBlack).SprintFunc()
+	fmt.Printf("port0: %s → %s (port %d)\n", name, cyan(url), port)
+	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", name)), cyan(fmt.Sprintf("http://%s.local", name)))
+	fmt.Printf("port0: use %s to view logs\n", cyan(fmt.Sprintf("port0 logs %s", name)))
 
-	fmt.Println()
-	fmt.Printf("  %s %s\n", green("✓"), "Server started")
-	fmt.Println()
-	fmt.Printf("  %s  %s\n", cyan("Name:"), name)
-	fmt.Printf("  %s  %d\n", cyan("Port:"), port)
-	fmt.Println()
-	fmt.Printf("  %s\n", yellow("Access at:"))
-	fmt.Printf("    • %s\n", url)
-	fmt.Printf("    • http://%s.web\n", name)
-	fmt.Printf("    • http://%s.local\n", name)
-	fmt.Println()
+	return nil
+}
 
-	if runDetach {
-		fmt.Printf("  Running in background. Use %s to view logs.\n", cyan(fmt.Sprintf("port0 logs %s", name)))
-		fmt.Println()
-		return nil
-	}
-
-	fmt.Printf("  %s\n", color.New(color.Faint).Sprint("Press Ctrl+C to stop"))
-	fmt.Println()
-	fmt.Println(color.New(color.Faint).Sprint("─────────────────────────────────────────────────────────"))
-	fmt.Println()
-
-	logsConn, err := ipc.Connect()
+func runForeground(args []string, cwd string) error {
+	// Get a port allocation from daemon
+	conn, err := ipc.Connect()
 	if err != nil {
-		return fmt.Errorf("error: cannot connect for logs: %w", err)
+		return fmt.Errorf("error: cannot connect to daemon: %w", err)
 	}
-	defer logsConn.Close()
 
-	logsReq := ipc.LogsRequest{
-		Name:   name,
-		Follow: true,
+	name := runName
+	if name == "" {
+		name = util.FromCwd(cwd)
 	}
-	if err := ipc.SendRequest(logsConn, "logs", logsReq); err != nil {
+
+	req := ipc.RegisterRequest{
+		Name:      name,
+		Cmd:       args,
+		Cwd:       cwd,
+		PortRange: runPortRange,
+	}
+
+	if err := ipc.SendRequest(conn, "register", req); err != nil {
+		conn.Close()
 		return fmt.Errorf("error: %w", err)
 	}
 
-	scanner := bufio.NewScanner(logsConn)
-	for scanner.Scan() {
-		line := scanner.Text()
-		var logLine map[string]string
-		if err := json.Unmarshal([]byte(line), &logLine); err != nil {
-			continue
-		}
-		if msg, ok := logLine["line"]; ok {
-			fmt.Print(msg)
+	resp, err := ipc.ReadResponse(conn)
+	conn.Close()
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	if !resp.OK {
+		return fmt.Errorf("error: %s", resp.Error)
+	}
+
+	var data map[string]interface{}
+	json.Unmarshal(resp.Data, &data)
+	port := int(data["port"].(float64))
+	url := data["url"].(string)
+
+	// Print minimal info
+	cyan := color.New(color.FgCyan).SprintFunc()
+	dim := color.New(color.FgHiBlack).SprintFunc()
+	fmt.Printf("port0: %s → %s (port %d)\n", name, cyan(url), port)
+	fmt.Printf("  %s %s, %s\n", dim("also:"), cyan(fmt.Sprintf("http://%s.web", name)), cyan(fmt.Sprintf("http://%s.local", name)))
+
+	// Setup signal handling
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	// Start the process with PORT env
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Dir = cwd
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PORT=%d", port))
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	if err := cmd.Start(); err != nil {
+		// Unregister on failure
+		unregister(name)
+		return fmt.Errorf("error: failed to start: %w", err)
+	}
+
+	// Wait for signal or process exit
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-sigChan:
+		// User pressed Ctrl+C
+		cmd.Process.Signal(os.Interrupt)
+		<-done
+	case err := <-done:
+		// Process exited on its own
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "port0: process exited with error: %v\n", err)
 		}
 	}
 
+	// Unregister from daemon
+	unregister(name)
 	return nil
+}
+
+func unregister(name string) {
+	conn, err := ipc.Connect()
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	req := map[string]string{"name": name}
+	ipc.SendRequest(conn, "unregister", req)
 }
 
 func init() {

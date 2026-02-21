@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -57,17 +58,11 @@ func (m *Manager) Spawn(proj *state.Project) error {
 		return fmt.Errorf("process: no command specified for %s", proj.Name)
 	}
 
-	// Resolve relative paths on Windows
-	cmdArgs := make([]string, len(proj.Cmd))
-	copy(cmdArgs, proj.Cmd)
-	for i, arg := range cmdArgs {
-		// If arg looks like a relative path (.\file or ..\file on Windows)
-		if len(arg) > 2 && (arg[0] == '.' && (arg[1] == '\\' || arg[1] == '/')) {
-			// Make it absolute
-			if abs, err := filepath.Abs(filepath.Join(proj.Cwd, arg)); err == nil {
-				cmdArgs[i] = abs
-			}
-		}
+	// Handle special case: "go run" on Windows creates console windows
+	// We need to build first, then run the compiled binary
+	cmdArgs, err := prepareCommand(proj.Cmd, proj.Cwd)
+	if err != nil {
+		return fmt.Errorf("process: prepare command: %w", err)
 	}
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
@@ -86,6 +81,10 @@ func (m *Manager) Spawn(proj *state.Project) error {
 	// Only output to logger for daemon processes, not to stdout/stderr
 	cmd.Stdout = logger
 	cmd.Stderr = logger
+	cmd.Stdin = nil
+
+	// Prevent console window on Windows
+	setChildProcessAttrs(cmd)
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("process: start %s: %w", proj.Name, err)
@@ -222,4 +221,50 @@ func Probe(port int, timeout time.Duration) bool {
 		time.Sleep(500 * time.Millisecond)
 	}
 	return false
+}
+
+// prepareCommand handles special cases like "go run" on Windows
+// to prevent console windows from appearing
+func prepareCommand(cmd []string, cwd string) ([]string, error) {
+	if len(cmd) < 2 {
+		return cmd, nil
+	}
+
+	// On Windows, "go run" creates a console window for the compiled binary
+	// We need to build first, then run the compiled binary
+	if runtime.GOOS == "windows" && cmd[0] == "go" && cmd[1] == "run" {
+		// Create a temp binary name based on the project name
+		tempDir := os.TempDir()
+		binaryName := filepath.Join(tempDir, fmt.Sprintf("port0_%d.exe", os.Getpid()))
+
+		// Build the binary
+		buildArgs := append([]string{"build", "-o", binaryName}, cmd[2:]...)
+		buildCmd := exec.Command("go", buildArgs...)
+		buildCmd.Dir = cwd
+		buildCmd.Stdout = nil
+		buildCmd.Stderr = nil
+		setChildProcessAttrs(buildCmd)
+
+		if err := buildCmd.Run(); err != nil {
+			return nil, fmt.Errorf("go build failed: %w", err)
+		}
+
+		// Return the compiled binary as the command
+		return []string{binaryName}, nil
+	}
+
+	// Resolve relative paths on Windows
+	result := make([]string, len(cmd))
+	copy(result, cmd)
+	for i, arg := range result {
+		// If arg looks like a relative path (.\file or ..\file on Windows)
+		if len(arg) > 2 && (arg[0] == '.' && (arg[1] == '\\' || arg[1] == '/')) {
+			// Make it absolute
+			if abs, err := filepath.Abs(filepath.Join(cwd, arg)); err == nil {
+				result[i] = abs
+			}
+		}
+	}
+
+	return result, nil
 }

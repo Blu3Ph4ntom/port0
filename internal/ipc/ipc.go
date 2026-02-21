@@ -49,6 +49,13 @@ type OpenRequest struct {
 	Name string `json:"name"`
 }
 
+type RegisterRequest struct {
+	Name      string   `json:"name"`
+	Cmd       []string `json:"cmd"`
+	Cwd       string   `json:"cwd"`
+	PortRange string   `json:"port_range"`
+}
+
 type LogLine struct {
 	Line string `json:"line"`
 	TS   string `json:"ts"`

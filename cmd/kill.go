@@ -62,5 +62,6 @@ var killCmd = &cobra.Command{
 
 func init() {
 	killCmd.Flags().BoolVar(&killRemove, "rm", false, "also remove from state")
+	killCmd.Flags().BoolVar(&killRemove, "remove", false, "also remove from state")
 	rootCmd.AddCommand(killCmd)
 }

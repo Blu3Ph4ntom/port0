@@ -122,12 +122,7 @@ func isDaemonRunning() bool {
 	if pid == 0 {
 		return false
 	}
-	proc, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-	err = proc.Signal(syscall.Signal(0))
-	return err == nil
+	return isProcessRunning(pid)
 }
 
 func readDaemonPid() int {
@@ -150,6 +145,7 @@ func startDaemonProcess() error {
 
 	child := exec.Command(bin, "daemon", "start")
 	child.Env = append(os.Environ(), "PORT0_DAEMON=1")
+	child.Stdin = nil
 	child.Stdout = nil
 	child.Stderr = nil
 	child.SysProcAttr = daemonSysProcAttr()
