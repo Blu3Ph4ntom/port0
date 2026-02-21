@@ -226,13 +226,13 @@ func Probe(port int, timeout time.Duration) bool {
 // prepareCommand handles special cases like "go run" on Windows
 // to prevent console windows from appearing
 func prepareCommand(cmd []string, cwd string) ([]string, error) {
-	if len(cmd) < 2 {
-		return cmd, nil
+	if len(cmd) == 0 {
+		return nil, nil
 	}
 
 	// On Windows, "go run" creates a console window for the compiled binary
 	// We need to build first, then run the compiled binary
-	if runtime.GOOS == "windows" && cmd[0] == "go" && cmd[1] == "run" {
+	if len(cmd) >= 2 && runtime.GOOS == "windows" && cmd[0] == "go" && cmd[1] == "run" {
 		// Create a temp binary name based on the project name
 		tempDir := os.TempDir()
 		binaryName := filepath.Join(tempDir, fmt.Sprintf("port0_%d.exe", os.Getpid()))
@@ -253,12 +253,12 @@ func prepareCommand(cmd []string, cwd string) ([]string, error) {
 		return []string{binaryName}, nil
 	}
 
-	// Resolve relative paths on Windows
+	// Resolve relative paths (e.g. ./bin or ../bin)
 	result := make([]string, len(cmd))
 	copy(result, cmd)
 	for i, arg := range result {
-		// If arg looks like a relative path (.\file or ..\file on Windows)
-		if len(arg) > 2 && (arg[0] == '.' && (arg[1] == '\\' || arg[1] == '/')) {
+		// If arg looks like a relative path
+		if len(arg) >= 2 && arg[0] == '.' && (arg[1] == '/' || arg[1] == '\\' || arg[1] == '.') {
 			// Make it absolute
 			if abs, err := filepath.Abs(filepath.Join(cwd, arg)); err == nil {
 				result[i] = abs

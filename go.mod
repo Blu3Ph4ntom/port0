@@ -1,6 +1,6 @@
 module github.com/blu3ph4ntom/port0
 
-go 1.23.6
+go 1.24.0
 
 require (
 	github.com/fatih/color v1.18.0
