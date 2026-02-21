@@ -1,5 +1,9 @@
 version: 2
 
+before:
+  hooks:
+    - go mod tidy
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -15,14 +19,29 @@ builds:
     binary: port0
 
 archives:
-  - format: tar.gz
+  # Standard compressed archives for manual downloads
+  - id: default
+    format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
         format: zip
+    files:
+      - LICENSE
+      - README.md
+
+  # Bare binaries specifically for the one-line installer and 'port0 update' command
+  # These are uploaded directly to the release assets as port0-linux-amd64, etc.
+  - id: binaries
+    format: binary
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+    allow_different_binary_count: true
 
 checksum:
   name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
@@ -31,3 +50,6 @@ changelog:
       - "^docs:"
       - "^chore:"
       - "^test:"
+      - "^ci:"
+      - "README"
+      - "merged"

@@ -1,0 +1,61 @@
+run:
+  timeout: 5m
+  go: "1.23"
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - dupl
+    - goconst
+    - gocyclo
+    - gofmt
+    - gosec
+    - misspell
+    - prealloc
+    - revive
+    - stylecheck
+    - unconvert
+    - unparam
+    - whitespace
+
+linters-settings:
+  govet:
+    enable:
+      - fieldalignment
+      - shadow
+  gocyclo:
+    min-complexity: 15
+  revive:
+    rules:
+      - name: exported
+        disabled: true
+      - name: package-comments
+        disabled: true
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  gosec:
+    excludes:
+      - G104 # Errors are checked by errcheck
+      - G304 # File paths are often dynamic in this tool (logs, state)
+  misspell:
+    locale: US
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - goconst
+        - gosec
+        - dupl
