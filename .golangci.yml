@@ -45,8 +45,28 @@ linters-settings:
       - G104 # Errors are checked by errcheck
       - G304 # File paths are often dynamic
   errcheck:
-    # Ignore specific functions that are commonly ignored
-    ignore: fmt:.*,io:Close,os:Remove.*,github.com/blu3ph4ntom/port0/internal/ipc:Write.*,github.com/blu3ph4ntom/port0/internal/ipc:SendRequest
+    check-type-assertions: true
+    exclude-functions:
+      - (*encoding/json.Encoder).Encode
+      - (*github.com/spf13/pflag.FlagSet).Parse
+      - (github.com/blu3ph4ntom/port0/internal/ipc).WriteError
+      - (github.com/blu3ph4ntom/port0/internal/ipc).WriteOK
+      - (github.com/blu3ph4ntom/port0/internal/ipc).SendRequest
+      - fmt.Fprintf
+      - fmt.Printf
+      - fmt.Println
+      - io.Copy
+      - os.Remove
+      - os.RemoveAll
+      - (net.Conn).Close
+      - (net.Listener).Close
+      - (*net/http.Server).Close
+      - (io.ReadCloser).Close
+      - (*os.File).Close
+      - (*os.File).Seek
+      - (*os.Process).Release
+      - (*os.Process).Kill
+      - (*os.Process).Signal
   misspell:
     locale: US
 
