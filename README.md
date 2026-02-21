@@ -56,6 +56,42 @@ port0 npm run dev
 port0 go run ./cmd/server
 ```
 
+### subdomain support (monorepos / multi-project)
+
+The first segment of the hostname is the project name. This lets you run multiple related projects under a shared parent domain:
+
+```
+myapp.localhost       -> "myapp" project
+api.myapp.localhost   -> "api" project (separate server)
+web.myapp.localhost   -> "web" project (separate server)
+admin.myapp.localhost -> "admin" project (separate server)
+```
+
+Use this for:
+- **Monorepos**: Run `api` and `web` as separate processes with clean URLs
+- **Micro-frontends**: Each service gets its own project name and subdomain
+- **Multi-repo under one domain**: Different repos sharing a parent domain
+
+Example workflow for a monorepo:
+```bash
+# Terminal 1 - start API server
+cd packages/api
+port0 -n api npm run dev
+# Available at: api.myapp.localhost
+
+# Terminal 2 - start web server
+cd packages/web
+port0 -n web npm run dev
+# Available at: web.myapp.localhost
+
+# Terminal 3 - start admin dashboard
+cd packages/admin
+port0 -n admin npm run dev
+# Available at: admin.myapp.localhost
+```
+
+All three share `myapp.localhost` as the parent domain but route to different projects.
+
 ---
 
 ## one-time system setup (optional)

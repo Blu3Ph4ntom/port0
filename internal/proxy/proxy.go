@@ -165,6 +165,23 @@ func extractName(host string) string {
 	if idx := strings.LastIndex(host, ":"); idx != -1 {
 		host = host[:idx]
 	}
+	host = strings.ToLower(host)
+
+	// Strip known TLD suffixes to get the routing domain
+	// Supports: *.localhost, *.web, *.local, and naked names
+	for _, suffix := range []string{".localhost", ".local", ".web"} {
+		if strings.HasSuffix(host, suffix) {
+			host = host[:len(host)-len(suffix)]
+			break
+		}
+	}
+
+	// Subdomain support: api.myapp -> api, admin.myapp -> admin
+	// The FIRST segment is the project name (subdomain routing)
+	// This allows monorepos to run multiple projects under one parent domain:
+	//   api.myapp.localhost -> "api" project
+	//   web.myapp.localhost -> "web" project
+	//   myapp.localhost -> "myapp" project (no subdomain)
 	if idx := strings.Index(host, "."); idx != -1 {
 		return host[:idx]
 	}

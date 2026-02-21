@@ -71,12 +71,27 @@ func TestExtractName(t *testing.T) {
 		host string
 		want string
 	}{
+		// Basic domains (no subdomain)
 		{"myapp.localhost", "myapp"},
 		{"myapp.localhost:80", "myapp"},
 		{"myapp.web", "myapp"},
 		{"myapp.web:8080", "myapp"},
 		{"myapp.local", "myapp"},
 		{"plain", "plain"},
+		// Subdomains - each routes to its own project (monorepo support)
+		// api.myapp.localhost -> "api" project
+		// web.myapp.localhost -> "web" project
+		{"api.myapp.localhost", "api"},
+		{"admin.myapp.localhost:80", "admin"},
+		{"api.myapp.web", "api"},
+		{"dashboard.myapp.web:8080", "dashboard"},
+		{"api.myapp.local", "api"},
+		// Multiple subdomains - first segment is the project
+		{"v1.api.myapp.localhost", "v1"},
+		{"app.web.myapp.web", "app"},
+		// Case insensitive
+		{"API.MyApp.Localhost", "api"},
+		{"MYAPP.LOCALHOST", "myapp"},
 	}
 	for _, tt := range tests {
 		got := extractName(tt.host)
