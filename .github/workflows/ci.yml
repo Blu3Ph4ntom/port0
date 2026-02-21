@@ -72,7 +72,7 @@ jobs:
       - name: Run Tests (with race detector)
         # Note: race detector requires CGO on some platforms,
         # but setup-go usually handles the toolchain correctly.
-        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        run: go test -v -race "-coverprofile=coverage.txt" "-covermode=atomic" ./...
 
       - name: Check Formatting
         if: matrix.os == 'ubuntu-latest'

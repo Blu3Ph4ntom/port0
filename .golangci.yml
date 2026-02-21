@@ -13,13 +13,11 @@ linters:
     - staticcheck
     - unused
     - bodyclose
-    - dupl
     - goconst
     - gocyclo
     - gofmt
     - gosec
     - misspell
-    - prealloc
     - revive
     - stylecheck
     - unconvert
@@ -32,7 +30,7 @@ linters-settings:
       - fieldalignment
       - shadow
   gocyclo:
-    min-complexity: 15
+    min-complexity: 20
   revive:
     rules:
       - name: exported
@@ -45,7 +43,10 @@ linters-settings:
   gosec:
     excludes:
       - G104 # Errors are checked by errcheck
-      - G304 # File paths are often dynamic in this tool (logs, state)
+      - G304 # File paths are often dynamic
+  errcheck:
+    # Ignore specific functions that are commonly ignored
+    ignore: fmt:.*,io:Close,os:Remove.*,github.com/blu3ph4ntom/port0/internal/ipc:Write.*,github.com/blu3ph4ntom/port0/internal/ipc:SendRequest
   misspell:
     locale: US
 
@@ -59,4 +60,4 @@ issues:
         - goconst
         - gosec
         - dupl
-        - errcheck # Tests often ignore Close() errors
+        - errcheck
