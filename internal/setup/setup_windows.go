@@ -100,11 +100,17 @@ if (-not (Has-Cmdlet "Add-DnsClientNrptRule")) {
 }
 
 function Ensure-Nrpt($ns) {
-  $existing = Get-DnsClientNrptRule -Namespace $ns -ErrorAction SilentlyContinue
+  if (-not (Has-Cmdlet "Get-DnsClientNrptRule")) {
+    Write-Output ("NRPT query cmdlet not available. Skipping " + $ns)
+    return
+  }
+
+  $existing = Get-DnsClientNrptRule -ErrorAction SilentlyContinue | Where-Object { $_.Namespace -eq $ns }
   if ($null -ne $existing) {
     Write-Output ("OK: NRPT already exists for " + $ns)
     return
   }
+
   Add-DnsClientNrptRule -Namespace $ns -NameServers "127.0.0.1" | Out-Null
   Write-Output ("OK: NRPT added for " + $ns + " -> 127.0.0.1")
 }
@@ -118,7 +124,7 @@ Ensure-Nrpt ".local"
 		if strings.TrimSpace(out) != "" {
 			fmt.Printf("  Output: %s\n", strings.TrimSpace(out))
 		}
-		fmt.Println("  Tip: run `port0 setup` from an elevated (Administrator) PowerShell.")
+		fmt.Println("  Tip: NRPT cmdlets vary by Windows version/edition; see output above.")
 	} else {
 		if strings.TrimSpace(out) != "" {
 			for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
