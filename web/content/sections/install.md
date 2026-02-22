@@ -15,7 +15,7 @@ weight: 2
     </div>
     <div class="cmd">
         <span>Windows (PowerShell)</span>
-        <code>irm https://port0.bluephantom.dev/install.bat | iex</code>
+        <code>irm https://port0.bluephantom.dev/install.ps1 | iex</code>
     </div>
 </div>
 </div>
