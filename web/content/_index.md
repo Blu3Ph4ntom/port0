@@ -4,11 +4,32 @@ title: "port0"
 
 <section id="overview" class="panel-section">
 <h1>Local development without port friction.</h1>
-<p class="lede">port0 auto-assigns a free port, injects <code>PORT</code>, and reverse-proxies HTTP traffic on port 80 to clean hostnames like <code>project.localhost</code>, <code>project.web</code>, and <code>project.local</code>.</p>
+<p class="lede">port0 is a lightweight daemon that auto-assigns free ports, injects the <code>PORT</code> environment variable, and reverse-proxies traffic to clean hostnames like <code>project.localhost</code>.</p>
+
 <div class="cta">
-<a class="btn primary" href="#install">Install</a>
+<a class="btn primary" href="#install">Get Started</a>
 <a class="btn external" href="https://github.com/blu3ph4ntom/port0" rel="noopener" target="_blank">GitHub</a>
 </div>
+
+<div class="features">
+<div class="feature-item">
+<h4>Zero Configuration</h4>
+<p>No project-level config files required. Port assignment and routing are derived from your working directory automatically.</p>
+</div>
+<div class="feature-item">
+<h4>Port Injection</h4>
+<p>Automatically finds an open port and injects it into your process via environment variables. Say goodbye to port 3000 conflicts.</p>
+</div>
+<div class="feature-item">
+<h4>Clean Hostnames</h4>
+<p>Access your local apps via <code>app.localhost</code> or <code>app.web</code> instead of memorizing messy IP addresses and port numbers.</p>
+</div>
+<div class="feature-item">
+<h4>Native Proxy & DNS</h4>
+<p>Built-in reverse proxy with WebSocket support and an embedded DNS server. Works seamlessly across macOS, Linux, and Windows.</p>
+</div>
+</div>
+
 <div class="quick">
 <div class="cmd">
 <span>macOS / Linux</span>
@@ -19,6 +40,7 @@ title: "port0"
 <code>irm https://port0.bluephantom.dev/install.bat | iex</code>
 </div>
 </div>
+
 <div class="section-footer">
 <a class="edit-link external" href="https://github.com/blu3ph4ntom/port0/edit/main/web/content/_index.md" rel="noopener" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.4 2.9 8.1 6.9 9.4.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 0 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.7-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.2.1-2.6 0 0 .8-.3 2.7 1a9.1 9.1 0 0 1 4.9 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.7 5 .4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5 6.9-9.4C22 6.6 17.5 2 12 2z"/></svg>Edit on GitHub</a>
 </div>
