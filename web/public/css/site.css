@@ -368,7 +368,7 @@ h3 {
 .quick .cmd {
     padding: 16px 20px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--code-bg);
     transition: border-color var(--transition-base);
 }
@@ -393,9 +393,9 @@ h3 {
 
 pre {
     background: var(--code-bg);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
     margin: 16px 0;
     overflow-x: auto;
     position: relative;

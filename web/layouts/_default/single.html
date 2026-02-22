@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {{- /* Redirect standalone content pages back to the homepage anchor (/#<id>). */ -}}
+    {{- $id := "" -}}
+    {{- with .File -}}
+      {{- $id = .ContentBaseName -}}
+    {{- end -}}
+    {{- if not $id -}}
+      {{- $id = (anchorize .Title) -}}
+    {{- end -}}
+
+    {{- $target := "/" -}}
+    {{- if $id -}}
+      {{- $target = printf "/#%s" $id -}}
+    {{- end -}}
+
+    <title>port0 — Redirecting…</title>
+    <link rel="canonical" href="{{ $target }}" />
+    <meta http-equiv="refresh" content="0; url={{ $target }}" />
+
+    <script>
+      (function () {
+        var target = {{ $target | jsonify }};
+        window.location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <p>Redirecting to <a href="{{ $target }}">{{ $target }}</a></p>
+    </noscript>
+  </body>
+</html>
