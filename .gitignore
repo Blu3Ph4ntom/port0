@@ -21,3 +21,8 @@ vendor/
 node_modules/
 server.js
 test_server.go
+
+# Web (Hugo)
+web/public/
+web/resources/
+web/.hugo_build.lock
