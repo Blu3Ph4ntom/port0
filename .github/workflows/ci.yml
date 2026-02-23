@@ -111,8 +111,14 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - name: Build port0
+      - name: Build port0 (non-Windows)
+        if: matrix.os != 'windows-latest'
         run: go build -v -o port0 .
+
+      - name: Build port0 (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: go build -v -o port0.exe .
 
       - name: Setup + Teardown (Linux)
         if: matrix.os == 'ubuntu-latest'
