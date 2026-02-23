@@ -64,6 +64,9 @@ func Run() error {
 
 	d.manager = process.NewManager(store, d.onProcessExit)
 
+	// Reconcile stale PIDs from previous daemon runs (e.g. crash/kill).
+	// We treat "port not listening" as stale and clear PID to avoid lockouts.
+	d.reconcileState()
 	d.syncState()
 
 	if err := p.StartHTTP(":80"); err != nil {
@@ -451,8 +454,15 @@ func (d *Daemon) handleRegister(conn net.Conn, payload json.RawMessage) {
 
 	if existing, ok := projects[name]; ok {
 		if existing.PID != 0 {
-			ipc.WriteError(conn, fmt.Sprintf("%s is already running at http://%s.localhost (pid %d)", name, name, existing.PID))
-			return
+			// If the port isn't reachable, treat the PID as stale (common after daemon restart).
+			if !process.Probe(existing.Port, 500*time.Millisecond) {
+				d.logger.Warn("clearing stale pid", "name", name, "pid", existing.PID, "port", existing.Port)
+				existing.PID = 0
+				_ = d.store.Set(existing)
+			} else {
+				ipc.WriteError(conn, fmt.Sprintf("%s is already running at http://%s.localhost (pid %d)", name, name, existing.PID))
+				return
+			}
 		}
 		if existing.Cwd != req.Cwd {
 			name = util.Deconflict(name, takenNames)
@@ -580,6 +590,34 @@ func (d *Daemon) onProcessExit(name string, exitCode int, restart string) {
 			d.logger.Error("restart: spawn", "name", name, "err", err)
 		}
 		d.syncState()
+	}
+}
+
+func (d *Daemon) reconcileState() {
+	st, err := d.store.Load()
+	if err != nil {
+		d.logger.Error("reconcile state", "err", err)
+		return
+	}
+
+	changed := false
+	for _, p := range st.Projects {
+		if p.PID == 0 {
+			continue
+		}
+		// If nothing is listening on the assigned port, the process is effectively dead.
+		// Clear PID so users can re-run/register without "already running" lockouts.
+		if !process.Probe(p.Port, 500*time.Millisecond) {
+			d.logger.Warn("clearing stale pid", "name", p.Name, "pid", p.PID, "port", p.Port)
+			p.PID = 0
+			changed = true
+		}
+	}
+
+	if changed {
+		if err := d.store.Save(st); err != nil {
+			d.logger.Error("reconcile state: save", "err", err)
+		}
 	}
 }
 
