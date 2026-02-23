@@ -27,7 +27,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.0"
+          go-version-file: "go.mod"
           cache: true
 
       - name: golangci-lint
@@ -44,7 +44,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.0"
+          go-version-file: "go.mod"
           cache: true
 
       - name: Run govulncheck
@@ -63,7 +63,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.0"
+          go-version-file: "go.mod"
           cache: true
 
       - name: Verify dependencies
@@ -96,6 +96,49 @@ jobs:
           file: ./coverage.txt
           fail_ci_if_error: false
 
+  setup-smoke:
+    name: Setup Smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Build port0
+        run: go build -v -o port0 .
+
+      - name: Setup + Teardown (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo ./port0 setup
+          test -f /etc/systemd/resolved.conf.d/port0.conf
+          sudo ./port0 teardown
+          test ! -f /etc/systemd/resolved.conf.d/port0.conf
+
+      - name: Setup + Teardown (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          sudo ./port0 setup
+          test -f /etc/resolver/web
+          test -f /etc/resolver/local
+          sudo ./port0 teardown
+          test ! -f /etc/resolver/web
+          test ! -f /etc/resolver/local
+
+      - name: Setup + Teardown (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          .\port0.exe setup
+          .\port0.exe teardown
+
   # Build verification for common architectures to ensure no platform-specific breakages
   build-check:
     name: Build Check (${{ matrix.goos }}/${{ matrix.goarch }})
@@ -117,7 +160,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.0"
+          go-version-file: "go.mod"
           cache: true
       - name: Build Cross-Platform
         env:
