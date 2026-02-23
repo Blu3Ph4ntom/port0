@@ -2,7 +2,8 @@
 
 No ports. Just names.
 
-port0 auto-assigns a free port, injects `PORT` into your process, and reverse-proxies HTTP traffic on port 80 to a short hostname (for example `project.localhost`, `project.web`, `project.local`). Use `localhost` for zero-config.
+port0 auto-assigns a free port, injects `PORT` into your process, and reverse-proxies HTTP traffic on port 80 to a short hostname 
+(for example, `project.localhost` (always works), `project.web` (works with one-time setup), `project.local` (same as .web, but some systems might fail due to mDNS conflicts )). Use `localhost` for zero-config.
 
 ---
 
